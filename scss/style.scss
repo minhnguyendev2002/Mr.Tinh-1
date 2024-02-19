@@ -1,0 +1,284 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap');
+@import url('./base.scss');
+
+*,*::after, *::before {
+    margin: 0;
+    box-sizing: border-box;
+}
+
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+main, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, main, menu, nav, section {
+	display: block;
+}
+/* HTML5 hidden-attribute fix for newer browsers */
+*[hidden] {
+    display: none;
+}
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+menu, ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+@function mapReverse ($map) {
+    $result: null;
+
+    @if type-of($map) == "map" {
+        $keys: map-keys($map);
+        $map-reversed: ();
+        
+        @for $i from length($keys) through 1 {
+            $map-reversed: map-merge(
+                $map-reversed,
+                (nth($keys, $i): map-get($map, nth($keys, $i)))
+            );
+        }
+
+        @if type-of($map-reversed) == "map" {
+            $result: $map-reversed;
+        } @else {
+            @warn 'There was an error reversing the order of "#{$map}"';
+        }
+    } @else {
+        @warn '"#{$map}" is not a valid map';
+    }
+
+    @return $result;
+}
+
+$breakpoint: (
+    xxs: 375px,
+    xs: 425px,
+    sm: 768px,
+    lg: 1024px,
+    xl: 1200px,
+    xxl: 1440px
+);
+
+
+@mixin responsive($bk, $rule: "max") {
+    @media (#{$rule}-width: $bk) {
+        @content;
+    }
+};
+
+
+
+@mixin generateClassResponsive($className, $rule) {
+    @each $k, $v in $breakpoint {
+        .#{$k}-#{$className} {
+            @include responsive($v, $rule) {
+                @content;
+            }
+        }
+    }
+};
+
+
+@mixin generateClass($values, $rule: "max") {
+    @if($rule == "max") {
+        $values: mapReverse($values)
+    } 
+    @each $k, $v in $values {
+        .#{$k} {
+            @content($k, $v)
+        };
+       
+    }
+
+    @each $k, $v in $values {
+        @include generateClassResponsive($k, $rule) {
+            @content($k, $v)
+        }
+       
+    }
+};
+
+
+
+
+// grid
+$column: 12;
+$displayGridCol:();
+$displayGridSpan:();
+
+@for $i from 1 through $column {
+    $displayGridCol: map-merge($displayGridCol , (
+        "col-#{$i}": $i
+    ));
+    $displayGridSpan: map-merge($displayGridSpan , (
+        "row-span-#{$i}": $i
+    ))
+}
+
+@debug $displayGridCol;
+@include generateClass($displayGridCol) using ($k, $v) {
+    grid-template-columns: repeat($v, minmax(0, 1fr));
+}
+
+@include generateClass($displayGridSpan) using ($k, $v) {
+    grid-column: span #{$v} / span #{$v};
+}
+
+
+
+// display  
+
+$display: (
+    hidden: none,
+    block: block,
+    flex: flex,
+    grid: grid,
+    table: table
+);
+
+@include generateClass($display) using ($k, $v) {
+    display: $v;
+}
+
+// position
+
+$position: (
+    absolute: absolute,
+    fixed: fixed,
+    relative: relative,
+    sticky: sticky
+);
+
+@include generateClass($position) using ($k, $v) {
+    position: $v;
+}
+
+// text-direction
+$textDirect: (
+    txt-left: left,
+    txt-center: center,
+    txt-right: right
+);
+
+@include generateClass($textDirect) using ($k, $v) {
+    text-align: $v;
+}
+
+
+html {
+    font-size: 10px !important;
+}
+
+body {
+    font-family: "Noto Sans JP", sans-serif;
+}
+
+.container {
+    max-width: 105rem;
+    padding: 0 1rem;
+    margin: 0 auto;
+}
+
+.header {
+    height: 7.8rem;
+    background-color: #fff;
+    &-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    &-logo {
+        width: 14rem;
+        img {
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    &-contact {
+        &-description {
+            font-size: 1.6rem;
+            text-align: right;
+        }
+
+        &-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            &-phone-number {
+                span {
+                    color: #00aa9e;
+                    margin-right: 0px;
+                    i {
+                        font-size: 2.2rem;
+                    }
+                }
+                h4 {
+                    font-size: 3rem;
+                    text-align: right;
+                    font-weight: bold;
+                }
+                h5 {
+                    font-size: 1.4rem;
+                    text-align: right;
+                }
+            }
+            &-button {
+                font-size: 1.6rem;
+                height: 4rem;
+                width: 20rem;
+                border-radius: 5rem;
+                text-align: center;
+                line-height: 4rem;
+                color: #fff;
+                font-weight: bold;
+                cursor: pointer;
+                
+                &.line-button {
+                    background-color: #00b900;
+                }
+                &.recive-button {
+                    background-color: #34a4e4;
+                }
+            }
+
+            & .hambeger-menu {
+                font-size: 3rem;
+                cursor: pointer;
+            }
+        }
+    }
+}
